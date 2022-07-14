@@ -1,3 +1,5 @@
+/* eslint-disable array-callback-return */
+/* eslint-disable react/jsx-no-comment-textnodes */
 import './App.css';
 import { Button } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -105,7 +107,9 @@ export default function NFT() {
     <div className='nftportal'>
       <div className="container col-lg-11 col-md-12 col-sm-12">
         <div className="row items px-3 pt-3">
+          // eslint-disable-next-line react/jsx-no-comment-textnodes
           <div className="ml-3 mr-3 nftimages">
+            // eslint-disable-next-line array-callback-return
             {apicall.map((nft, i) => {
               var owner = nft.wallet;
               if (owner.indexOf(nft.holder) !== -1) {

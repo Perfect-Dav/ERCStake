@@ -1,3 +1,7 @@
+/* eslint-disable jsx-a11y/anchor-is-valid */
+/* eslint-disable jsx-a11y/alt-text */
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-use-before-define */
 import "./App.css";
 import { Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -5,7 +9,6 @@ import React, { Component } from "react";
 import "sf-font";
 import ABI from "./ABI.json";
 import VAULTABI from "./VAULTABI.json";
-import TOKENABI from "./TOKENABI.json";
 import {
   NFTCONTRACT,
   STAKINGCONTRACT,
