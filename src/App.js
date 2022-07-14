@@ -85,7 +85,7 @@ class App extends Component {
           document.getElementById("stakedbalance").textContent = getbalance;
         }
 
-        var rawnfts = await vaultcontract.methods.tokensOfOwner(account).call();
+        var rawnfts = await contract.methods.walletOfOwner(account).call();
         const arraynft = Array.from(rawnfts.map(Number));
         const tokenid = arraynft.filter(Number);
         var rwdArray = [];
@@ -110,7 +110,7 @@ class App extends Component {
 
     async function verify() {
       var getstakednfts = await vaultcontract.methods
-        .tokensOfOwner(account)
+        .walletOfOwner(account)
         .call();
       if (getstakednfts.length <= 15) {
         document.getElementById("yournfts").textContent = getstakednfts;
@@ -133,7 +133,7 @@ class App extends Component {
     }
 
     async function rewardinfo() {
-      var rawnfts = await vaultcontract.methods.tokensOfOwner(account).call();
+      var rawnfts = await vaultcontract.methods.walletOfOwner(account).call();
       const arraynft = Array.from(rawnfts.map(Number));
       const tokenid = arraynft.filter(Number);
       var rwdArray = [];
@@ -168,12 +168,12 @@ class App extends Component {
     }
 
     async function claimit() {
-      var rawnfts = await vaultcontract.methods.tokensOfOwner(account).call();
+      var rawnfts = await vaultcontract.methods.walletOfOwner(account).call();
       await vaultcontract.methods.claim(rawnfts).send({ from: account })
     }
 
     async function unstakeall() {
-      var rawNfts = await vaultcontract.methods.tokensOfOwner(account).call();
+      var rawNfts = await vaultcontract.methods.walletOfOwner(account).call();
       const first25 = rawNfts.slice(0,25)
       await vaultcontract.methods.unstake(first25).send({ from: account });
     }
