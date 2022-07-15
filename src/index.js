@@ -5,7 +5,7 @@ import App from './App';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import reportWebVitals from './reportWebVitals';
 import { Routes, Route } from "react-router-dom";
-import Nft from './nft';
+import Nft from './components/nft';
 
 <Routes>
 <Route path="/nft" element={<Nft />} />
@@ -16,7 +16,6 @@ root.render(
   
   <React.StrictMode>
     <App />
-    <Nft />
   </React.StrictMode>
 );
 

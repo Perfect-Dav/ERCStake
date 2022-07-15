@@ -1,18 +1,16 @@
-/* eslint-disable jsx-a11y/anchor-is-valid */
-/* eslint-disable jsx-a11y/alt-text */
-/* eslint-disable no-unused-vars */
-/* eslint-disable no-use-before-define */
-import "./App.css";
+import "./styles/App.css";
 import { Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
-import React, { Component } from "react";
+import React, { Component, useEffect } from "react";
 import "sf-font";
-import ABI from "./ABI.json";
-import VAULTABI from "./VAULTABI.json";
+import NFT from "./components/nft";
+import ABI from "./blockchain/ABIs/ABI.json";
+import VAULTABI from "./blockchain/ABIs/VAULTABI.json";
+import TOKENABI from "./blockchain/ABIs/TOKENABI.json";
 import {
   NFTCONTRACT,
   STAKINGCONTRACT,
-} from "./config";
+} from "./blockchain/config.js";
 import Web3 from "web3";
 
 
@@ -49,33 +47,35 @@ class App extends Component {
               method: "wallet_addEthereumChain",
               params: [
                 {
-                  chainName: "SmartBCH",
+                  chainName: "Smart Bitcoin Cash",
                   chainId: web3.utils.toHex(chainId),
                   nativeCurrency: {
                     name: "BCH",
                     decimals: 18,
                     symbol: "BCH",
                   },
-                  rpcUrls: ["https://global.uat.cash/ "],
+                  rpcUrls: ["https://smartbch.fountainhead.cash/mainnet"],
                 },
               ],
             });
           }
         }
       }
+
       if (window.ethereum) {
         var web3 = new Web3(window.ethereum);
         await window.ethereum.send("eth_requestAccounts");
         var accounts = await web3.eth.getAccounts();
         account = accounts[0];
-        document.getElementById("wallet-address").textContent = account;
+        let accountText = `${accounts[0].slice(0, 4)}***${accounts[0].slice(38, 42)}`
+        document.getElementById("connectbtn").value = accountText;
         contract = new web3.eth.Contract(ABI, NFTCONTRACT);
         vaultcontract = new web3.eth.Contract(VAULTABI, STAKINGCONTRACT);
 
         var getstakednfts = await vaultcontract.methods
           .tokensOfOwner(account)
           .call();
-        if (getstakednfts.length <= 15) {
+        if (getstakednfts.length <= 1) {
           const getbalance = Number(await vaultcontract.methods.balanceOf(account).call());
           document.getElementById("yournfts").textContent = getstakednfts;
           document.getElementById("stakedbalance").textContent = getbalance;
@@ -85,7 +85,7 @@ class App extends Component {
           document.getElementById("stakedbalance").textContent = getbalance;
         }
 
-        var rawnfts = await contract.methods.walletOfOwner(account).call();
+        var rawnfts = await vaultcontract.methods.tokensOfOwner(account).call();
         const arraynft = Array.from(rawnfts.map(Number));
         const tokenid = arraynft.filter(Number);
         var rwdArray = [];
@@ -110,9 +110,9 @@ class App extends Component {
 
     async function verify() {
       var getstakednfts = await vaultcontract.methods
-        .walletOfOwner(account)
+        .tokensOfOwner(account)
         .call();
-      if (getstakednfts.length <= 15) {
+      if (getstakednfts.length <= 25) {
         document.getElementById("yournfts").textContent = getstakednfts;
       } else {
         const getbalance = Number(
@@ -133,7 +133,7 @@ class App extends Component {
     }
 
     async function rewardinfo() {
-      var rawnfts = await vaultcontract.methods.walletOfOwner(account).call();
+      var rawnfts = await vaultcontract.methods.tokensOfOwner(account).call();
       const arraynft = Array.from(rawnfts.map(Number));
       const tokenid = arraynft.filter(Number);
       var rwdArray = [];
@@ -168,19 +168,19 @@ class App extends Component {
     }
 
     async function claimit() {
-      var rawnfts = await vaultcontract.methods.walletOfOwner(account).call();
+      var rawnfts = await vaultcontract.methods.tokensOfOwner(account).call();
       await vaultcontract.methods.claim(rawnfts).send({ from: account })
     }
 
     async function unstakeall() {
-      var rawNfts = await vaultcontract.methods.walletOfOwner(account).call();
-      const first25 = rawNfts.slice(0,25)
+      var rawNfts = await vaultcontract.methods.tokensOfOwner(account).call();
+      const first25 = rawNfts.slice(0, 25)
       await vaultcontract.methods.unstake(first25).send({ from: account });
     }
 
     async function stakeAll() {
       var rawNfts = await contract.methods.walletOfOwner(account).call();
-      const first25 = rawNfts.slice(0,25)
+      const first25 = rawNfts.slice(0, 25)
       await vaultcontract.methods.stake(first25).send({
         from: account,
       });
@@ -208,16 +208,16 @@ class App extends Component {
 
     return (
       <div className="App nftapp">
-        <nav class="navbar navbarfont navbarglow navbar-expand-md navbar-dark bg-dark mb-4">
-          <div class="container-fluid nav-container" style={{ fontFamily: "SF Pro Display" }}>
-            <img className='nav-logo' style={{ width: '100px' }} src="lambo-logo.png" />
-            <div class="collapse navbar-collapse" id="navbarCollapse">
+        <nav className="navbar navbarfont navbarglow navbar-expand-md mb-4" style={{ backgroundColor: '#bea193' }}>
+          <div className="container-fluid nav-container">
+            <img alt="logo" className='nav-logo' style={{ width: '100px' }} src="logo.jpg" />
+            <div className="collapse navbar-collapse" id="navbarCollapse">
               <ul
-                class="navbar-nav me-auto mb-2 px-3 mb-md-0"
+                className="navbar-nav me-auto mb-2 px-3 mb-md-0"
                 style={{ fontSize: "25px" }}
               >
-                <li class="nav-item">
-                  <a class="nav-link active" aria-current="page" href="#">
+                <li className="nav-item">
+                  <a style={{ color: '#fff' }} className="nav-link active" aria-current="page" href="#/">
                     Staking Page
                   </a>
                 </li>
@@ -228,14 +228,134 @@ class App extends Component {
             <input
               id="connectbtn"
               type="button"
-              className="connectbutton"
+              className="connectbutton form form-control"
               onClick={connectwallet}
-              style={{ fontFamily: "SF Pro Display" }}
+              style={{ padding: '20px' }}
               value="Connect Your Wallet"
+
             />
           </div>
         </nav>
-        <div className="container container-style">
+        <div className="container dashboard">
+          <div className="row">
+            <h4>Goblins Staking Dashboard</h4>
+            <Button
+              className="btn btn-primary btn-lg authorize"
+              onClick={enable}
+              style={{
+                backgroundColor: "#ffffff10",
+                marginBottom: '20px'
+              }}
+            >
+              Approve Your NFT
+            </Button>
+            <div className="col-md-4">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">My Goblins Staking</h5>
+                  <div className="row">
+                    <div className="col-md-6">
+                    <div>
+                    <h6>Total Staked</h6>
+                    <p>--</p>
+                    <a href="#/" onClick={stakeAll} class="btn action-btn btn-primary">Stake All</a>
+                  </div>
+                    </div>
+                    <div className="col-md-6">
+                    <div>
+                      <h6>Available in Wallet:</h6>
+                      <p>--</p>
+                    </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-body">
+                  <div className="row">
+                    <div className="col-md-6">
+                    <div>
+                    <h6>GobNFT Earned:</h6>
+                    <p>--</p>
+                    <a href="#/" onClick={claimit} class="btn action-btn btn-primary">Claim</a>
+                  </div>
+                    </div>
+                    <div className="col-md-6">
+                    <div>
+                      <h6>Available in Vault:</h6>
+                      <p>--</p>
+                      <a href="#/" onClick={unstakeall} class="btn action-btn btn-primary">Unstake All</a>
+                    </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="col-md-8">
+              <div className="card" style={{marginTop: '40px'}}>
+                <div className="card-body">
+                  <div className="row">
+                    <div className="col-md-4">
+                      <h6>Total Goblins Staked
+                        <p>-- Goblins</p>
+                      </h6>
+                    </div>
+                    <div className="col-md-4">
+                      <h6>Daily rewards
+                        <p>0.991 GobNFT</p>
+                      </h6>
+                    </div>
+                    <div className="col-md-4">
+                      <h6>Max Supply
+                        <p>9,999 Goblins</p>
+                      </h6>
+                    </div>
+                  </div>
+                </div>
+              </div> <br/><br/>
+              <div className="card">
+              <div className="card-body">
+                  <div className="row">
+                    <div className="col-md-4">
+                      <h6>GobNFT Max Supply
+                        <p>10,000,000,000</p>
+                      </h6>
+                    </div>
+                    <div className="col-md-4">
+                      <h6>GobNFT Price
+                        <p>--</p>
+                      </h6>
+                    </div>
+                    <div className="col-md-4">
+                      <h6>Liquidity
+                        <p>$--</p>
+                      </h6>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+              <NFT />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        {/**<div className="container container-style">
           <div className="col">
             <form className="nftminter">
               <div className="row pt-3">
@@ -244,19 +364,20 @@ class App extends Component {
                     Stake and Unstake
                   </h1>
                 </div>
-                <h6>Your Wallet Address</h6>
-                <div
-                  className="pb-3"
-                  id="wallet-address"
-                  style={{
-                    color: "#39FF14",
-                    fontWeight: "400",
-                    textShadow: "1px 1px 1px black",
-                  }}
-                >
-                  <label for="floatingInput">Please Connect Wallet</label>
-                </div>
               </div>
+
+              <h6 style={{ fontWeight: "300" }}>First time staking?</h6>
+              <Button
+                className="btn authorize"
+                onClick={enable}
+                style={{
+                  backgroundColor: "#ffffff10",
+                  boxShadow: "1px 1px 5px #000000",
+                  marginBottom: '20px'
+                }}
+              >
+                Authorize Your Wallet
+              </Button>
               <div>
                 <label style={{ fontWeight: "300", fontSize: "18px" }}>
                   Vault Options
@@ -268,17 +389,17 @@ class App extends Component {
               </p>
               <p>If you don't own the NFT, the transaction will fail.</p>
               <div className="stkunstk-btn-input">
-                <Button onClick={stakeInput} style={{ margin: "10px 5px", width: '25%' }} value="stake">
+                <Button onClick={stakeInput} style={{ margin: "10px 5px", width: '25%', backgroundColor: "#ffffff10", boxShadow: "1px 1px 5px #000000" }} value="stake">
                   Stake
                 </Button>
-                <input id='stake-input' placeholder="Input your NFTs #ID" style={{ width: '70%' }} />
-                <Button onClick={unstakeInput} style={{ margin: "10px 5px", width: '25%' }} value="unstake">
+                <input id='stake-input' placeholder="Input your NFTs #ID" style={{ borderColor: 'black', color: 'white', width: '70%', backgroundColor: "#ffffff10", boxShadow: "1px 1px 5px #00000", padding: '3px' }} />
+                <Button onClick={unstakeInput} style={{ margin: "10px 5px", width: '25%', backgroundColor: "#ffffff10", boxShadow: "1px 1px 5px #000000" }} value="unstake">
                   Unstake
                 </Button>
-                <input id='unstake-input' placeholder="Input your NFTs #ID" style={{ width: '70%' }} />
+                <input id='unstake-input' placeholder="Input your NFTs #ID" style={{ borderColor: 'black', color: 'white', width: '70%', backgroundColor: "#ffffff10", boxShadow: "1px 1px 5px #000000", padding: '3px' }} />
               </div>
               <br />
-              <Button onClick={stakeAll} style={{ margin: "20px 10px" }} value="stake-all">
+              <Button onClick={stakeAll} style={{ margin: "20px 10px", backgroundColor: "#ffffff10", boxShadow: "1px 1px 5px #000000" }} value="stake-all">
                 Stake ALL
               </Button>
               <p>This will stake all your NFTs (Max. 25 per transaction, the same applies to unstake), the gas fee could be higher depending on how many you have.</p> <br />
@@ -295,21 +416,24 @@ class App extends Component {
               >
                 WenLambo NFT Staking Vault{" "}
               </h2>
-              <h6 style={{ fontWeight: "300" }}>First time staking?</h6>
-              <Button
-                className="btn authorize"
-                onClick={enable}
-                style={{
-                  backgroundColor: "#ffffff10",
-                  boxShadow: "1px 1px 5px #000000",
-                }}
-              >
-                Authorize Your Wallet
-              </Button>
+              <div style={{ width: '60%', margin: 'auto' }}>
+                <h6 style={{ fontWeight: "300", padding: '20px 0px' }}>If you don't authorize your wallet, transaction will fail or gas fee will be 0.99 BCH</h6>
+                <Button
+                  className="btn authorize"
+                  onClick={enable}
+                  style={{
+                    backgroundColor: "#ffffff10",
+                    boxShadow: "1px 1px 5px #000000",
+                    marginBottom: '20px'
+                  }}
+                >
+                  Authorize Your Wallet
+                </Button>
+              </div>
               <div className="row px-3">
                 <div className="col">
                   <form
-                    class="stakingrewards"
+                    className="stakingrewards"
                     style={{
                       borderRadius: "25px",
                       boxShadow: "1px 1px 15px #ffffff",
@@ -431,7 +555,7 @@ class App extends Component {
                 </div>
               </div>
               <div className="row px-4 pt-2">
-                <div class="header">
+                <div className="header">
                   <div
                     style={{
                       fontSize: "25px",
@@ -453,11 +577,11 @@ class App extends Component {
                       <tr className="stakegoldeffect">
                         <td>WenLambo Legendary NFT Collection</td>
                         <td
-                          class="amount"
+                          className="amount"
                           data-test-id="rewards-summary-one-time"
                         >
-                          <span class="amount">25</span>&nbsp;
-                          <span class="currency">RLAM/NFT</span>
+                          <span className="amount">25</span>&nbsp;
+                          <span className="currency">RLAM/NFT</span>
                         </td>
                       </tr>
                     </tbody>
@@ -486,8 +610,8 @@ class App extends Component {
           <div className="col mt-3 mr-5">
             <img src="smartbch.png" width={"60%"}></img>
           </div>
+        </div>**/}
         </div>
-      </div>
     );
   }
 }

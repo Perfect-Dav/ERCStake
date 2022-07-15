@@ -1,15 +1,13 @@
-/* eslint-disable array-callback-return */
-/* eslint-disable react/jsx-no-comment-textnodes */
-import './App.css';
+import '../styles/App.css';
 import { Button } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import React from 'react';
 import { useEffect, useState } from 'react'
 import 'sf-font';
-import VAULTABI from './VAULTABI.json';
-import { NFTCONTRACT, STAKINGCONTRACT, nftpng } from './config';
+import VAULTABI from '../blockchain/ABIs/VAULTABI.json';
+import { NFTCONTRACT, STAKINGCONTRACT, nftpng } from '../blockchain/config';
 import Web3 from 'web3';
-import ABI from './ABI.json';
+import ABI from '../blockchain/ABIs/ABI.json';
 
 var account = null;
 var vaultcontract = null;
@@ -102,14 +100,11 @@ export default function NFT() {
 
   if (loadingState === 'loaded' && !apicall.length)
     return (
-      <h1 className="text-3xl">You don't have any NFTs</h1>)
+      <h1 className="text-3xl">You don't have any NFT. You can Mint or Get on Oasis.</h1>)
   return (
-    <div className='nftportal'>
-      <div className="container col-lg-11 col-md-12 col-sm-12">
-        <div className="row items px-3 pt-3">
-          // eslint-disable-next-line react/jsx-no-comment-textnodes
-          <div className="ml-3 mr-3 nftimages">
-            // eslint-disable-next-line array-callback-return
+      <div className="container">
+        <h4>GOBLIN'S ZONE</h4>
+        <div className="row">
             {apicall.map((nft, i) => {
               var owner = nft.wallet;
               if (owner.indexOf(nft.holder) !== -1) {
@@ -117,20 +112,20 @@ export default function NFT() {
                   vaultcontract.methods.stake([nft.tokenId]).send({ from: account });
                 }
                 return (
-                  <div className="card nft-card mt-3 mb-3" key={i} >
+                  <div className='col-md-3'>
+                  <div className="card nft-card" key={i} >
                     <div className="image-over">
                       <img className="card-img-top" src={nftpng + nft.tokenId + '.png'} alt="" />
                     </div>
                     <div className="card-caption col-12 p-0">
                       <div className="card-body">
-                        <h5 className="mb-0">WenLambo Legendary NFT Collection #{nft.tokenId}</h5>
-                        <h5 className="mb-0 mt-2">Status<p style={{ color: "#39FF14", fontWeight: "bold", textShadow: "1px 1px 2px #000000" }}>Ready to Stake</p></h5>
+                        <h5 className="mb-0">Goblins NFT #{nft.tokenId}</h5>
                         <div className="card-bottom d-flex justify-content-between">
-                          <input key={i} type="hidden" id='stakeid' value={nft.tokenId} />
-                          <Button style={{ marginLeft: '2px', backgroundColor: "#ffffff10" }} onClick={stakeit}>Stake it</Button>
+                          <Button className='action-btn' onClick={stakeit}>Stake #{nft.tokenId}</Button>
                         </div>
                       </div>
                     </div>
+                  </div>
                   </div>
                 )
               }
@@ -140,29 +135,24 @@ export default function NFT() {
                 vaultcontract.methods.unstake([nft.tokenId]).send({ from: account });
               }
               return (
-                <div>
-
-                  <div className="card stakedcard mt-3 mb-3" key={i} >
+                <div className='col-md-3'>
+                  <div className="card nft-card" key={i} >
                     <div className="image-over">
                       <img className="card-img-top" src={nftpng + nft.tokenId + '.png'} alt="" />
                     </div>
                     <div className="card-caption col-12 p-0">
                       <div className="card-body">
-                        <h5 className="mb-0">WenLambo Legendary NFT Collection #{nft.tokenId}</h5>
-                        <h5 className="mb-0 mt-2">Status<p style={{ color: "#15F4EE", fontWeight: "bold", textShadow: "1px 1px 2px #000000" }}>Currently Staked</p></h5>
+                        <h5 className="mb-0">Goblins NFT #{nft.tokenId}</h5>
                         <div className="card-bottom d-flex justify-content-between">
-                          <input key={i} type="hidden" id='stakeid' value={nft.tokenId} />
-                          <Button style={{ marginLeft: '2px', backgroundColor: "#ffffff10" }} onClick={unstakeit}>Unstake it</Button>
+                          <Button className='action-btn' onClick={unstakeit}>UnStake #{nft.tokenId}</Button>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                  </div>
               )
             })}
           </div>
         </div>
-      </div>
-    </div>
   )
 }
