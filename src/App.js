@@ -1,3 +1,6 @@
+/* eslint-disable no-use-before-define */
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-lone-blocks */
 import "./styles/App.css";
 import { Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -186,7 +189,7 @@ class App extends Component {
       });
     }
 
-    async function stakeInput() {
+    {/**async function stakeInput() {
       const tokenIds = document.querySelector('#stake-input').value
       const nftsIds = JSON.parse("[" + tokenIds + "]");
       await vaultcontract.methods.stake(nftsIds).send({
@@ -200,11 +203,8 @@ class App extends Component {
       await vaultcontract.methods.unstake(nftsIds).send({
         from: account,
       });
-    }
+    }**/}
 
-    const refreshPage = () => {
-      window.location.reload();
-    };
 
     return (
       <div className="App nftapp">
