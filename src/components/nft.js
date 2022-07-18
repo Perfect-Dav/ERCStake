@@ -116,7 +116,7 @@ export default function NFT() {
               <div className='col-md-3'>
                 <div className="card nft-card" key={i} >
                   <div className="image-over">
-                    <img className="card-img-top" src={nftpng + nft.tokenId + '.png'} alt="" />
+                    <img className="card-img-top" src={nftpng + nft.tokenId + '.png'} alt={nft.tokenId + 'image'} />
                   </div>
                   <div className="card-caption col-12 p-0">
                     <div className="card-body">
@@ -139,13 +139,13 @@ export default function NFT() {
             <div className='col-md-3'>
               <div className="card nft-card" key={i} >
                 <div className="image-over">
-                  <img className="card-img-top" src={nftpng + nft.tokenId + '.png'} alt="" />
+                  <img className="card-img-top" src={nftpng + nft.tokenId + '.png'} alt={nft.tokenId + 'image'} />
                 </div>
                 <div className="card-caption col-12 p-0">
                   <div className="card-body">
                     <h5 className="mb-0">Goblins NFT #{nft.tokenId}</h5>
                     <div className="card-bottom d-flex justify-content-between">
-                      <Button className='action-btn' onClick={unstakeit}>UnStake #{nft.tokenId}</Button>
+                      <Button className='action-tn' style={{backgroundColor: '#d3d08d', padding: '14px', width: '126px', border: 'none', maxWidth: '100%'}}  onClick={unstakeit}>UnStake #{nft.tokenId}</Button>
                     </div>
                   </div>
                 </div>

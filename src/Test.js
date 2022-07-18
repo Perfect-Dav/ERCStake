@@ -1,15 +1,11 @@
-/* eslint-disable no-use-before-define */
-/* eslint-disable no-unused-vars */
-/* eslint-disable no-lone-blocks */
-
 import "./styles/App.css";
 import { Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
-import React, { Component } from "react";
+import React, { Component, useEffect } from "react";
 import "sf-font";
-import NFT from "./components/nft";
 import ABI from "./blockchain/ABIs/ABI.json";
 import VAULTABI from "./blockchain/ABIs/VAULTABI.json";
+import TOKENABI from "./blockchain/ABIs/TOKENABI.json";
 import {
   NFTCONTRACT,
   STAKINGCONTRACT,
@@ -20,6 +16,7 @@ import Web3 from "web3";
 var account = null;
 var contract = null;
 var vaultcontract = null;
+var web3 = null;
 
 
 class App extends Component {
@@ -69,7 +66,7 @@ class App extends Component {
         await window.ethereum.send("eth_requestAccounts");
         var accounts = await web3.eth.getAccounts();
         account = accounts[0];
-        let accountText = `${accounts[0].slice(0, 4)}***${accounts[0].slice(38, 42)}`
+        let accountText = `${accounts[0].slice(0,4)}***${accounts[0].slice(38,42)}`
         document.getElementById("connectbtn").value = accountText;
         contract = new web3.eth.Contract(ABI, NFTCONTRACT);
         vaultcontract = new web3.eth.Contract(VAULTABI, STAKINGCONTRACT);
@@ -77,7 +74,7 @@ class App extends Component {
         var getstakednfts = await vaultcontract.methods
           .tokensOfOwner(account)
           .call();
-        if (getstakednfts.length <= 1) {
+        if (getstakednfts.length <= 15) {
           const getbalance = Number(await vaultcontract.methods.balanceOf(account).call());
           document.getElementById("yournfts").textContent = getstakednfts;
           document.getElementById("stakedbalance").textContent = getbalance;
@@ -86,21 +83,6 @@ class App extends Component {
           document.getElementById("yournfts").textContent = getbalance;
           document.getElementById("stakedbalance").textContent = getbalance;
         }
-
-        var getTotalSupply = Number(await vaultcontract.methods.totalStaked().call());
-        document.getElementById("totalsupply").textContent = `${getTotalSupply + 'Goblins'}`;
-
-        var getNftBalance = await contract.methods
-        .walletOfOwner(account)
-        .call();
-        if (getNftBalance.length <=1) {
-          const getSupply = Number(await contract.methods.balanceOf(account).call());
-          document.getElementById("nftbalance").textContent = getSupply;
-        } else {
-          const getSupply = Number(await contract.methods.balanceOf(account).call());
-          document.getElementById("nftbalance").textContent = getSupply;
-        }
-        
 
         var rawnfts = await vaultcontract.methods.tokensOfOwner(account).call();
         const arraynft = Array.from(rawnfts.map(Number));
@@ -191,19 +173,19 @@ class App extends Component {
 
     async function unstakeall() {
       var rawNfts = await vaultcontract.methods.tokensOfOwner(account).call();
-      const first25 = rawNfts.slice(0, 30)
+      const first25 = rawNfts.slice(0,25)
       await vaultcontract.methods.unstake(first25).send({ from: account });
     }
 
     async function stakeAll() {
       var rawNfts = await contract.methods.walletOfOwner(account).call();
-      const first25 = rawNfts.slice(0, 30)
+      const first25 = rawNfts.slice(0,25)
       await vaultcontract.methods.stake(first25).send({
         from: account,
       });
     }
 
-    {/**async function stakeInput() {
+    async function stakeInput() {
       const tokenIds = document.querySelector('#stake-input').value
       const nftsIds = JSON.parse("[" + tokenIds + "]");
       await vaultcontract.methods.stake(nftsIds).send({
@@ -217,21 +199,24 @@ class App extends Component {
       await vaultcontract.methods.unstake(nftsIds).send({
         from: account,
       });
-    }**/}
+    }
 
+    const refreshPage = () => {
+      window.location.reload();
+    };
 
     return (
       <div className="App nftapp">
-        <nav className="navbar navbarfont navbarglow navbar-expand-md mb-4" style={{ backgroundColor: '#bea193' }}>
-          <div className="container-fluid nav-container">
-            <img alt="logo" className='nav-logo' style={{ width: '100px' }} src="logo.jpg" />
+        <nav className="navbar navbarfont navbarglow navbar-expand-md navbar-dark bg-dark mb-4">
+          <div className="container-fluid nav-container" style={{ fontFamily: "SF Pro Display" }}>
+            <img className='nav-logo' style={{ width: '100px' }} src="lambo-logo.png" />
             <div className="collapse navbar-collapse" id="navbarCollapse">
               <ul
                 className="navbar-nav me-auto mb-2 px-3 mb-md-0"
                 style={{ fontSize: "25px" }}
               >
                 <li className="nav-item">
-                  <a style={{ color: '#fff' }} className="nav-link active" aria-current="page" href="#/">
+                  <a className="nav-link active" aria-current="page" href="#">
                     Staking Page
                   </a>
                 </li>
@@ -242,129 +227,14 @@ class App extends Component {
             <input
               id="connectbtn"
               type="button"
-              className="connectbutton form form-control"
+              className="connectbutton"
               onClick={connectwallet}
-              style={{ padding: '20px' }}
+              style={{ fontFamily: "SF Pro Display" }}
               value="Connect Your Wallet"
-
             />
           </div>
         </nav>
-        <div className="container dashboard">
-          <div className="row">
-            <h4>Goblins Staking Dashboard</h4>
-            <Button
-              className="btn btn-primary btn-lg authorize"
-              onClick={enable}
-              style={{
-                backgroundColor: "#ffffff10",
-                marginBottom: '20px'
-              }}
-            >
-              Approve Your NFT
-            </Button>
-            <div className="col-md-4">
-              <div class="card">
-                <div class="card-body">
-                  <h5 class="card-title">My Goblins Staking</h5>
-                  <div className="row">
-                    <div className="col-md-6">
-                    <div>
-                    <h6>Total Staked</h6>
-                    <p id="stakedbalance">--</p>
-                    <a href="#/" onClick={stakeAll} class="btn action-btn btn-primary">Stake All</a>
-                  </div>
-                    </div>
-                    <div className="col-md-6">
-                    <div>
-                      <h6>Available in Wallet:</h6>
-                      <p id="nftbalance">--</p>
-                    </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="card" onLoad={rewardinfo}> 
-                <div class="card-body">
-                  <div className="row">
-                    <div className="col-md-6">
-                    <div>
-                    <h6>GobNFT Earned:</h6>
-                    <p id="earned">--</p>
-                    <div className="btn-group" role="group" aria-label="btn-group">
-                    <a href="#/" onClick={rewardinfo} class="btn action-btn btn-primary">Check Reward</a>
-                    <a href="#/" onClick={claimit} class="btn action-btn btn-primary">Claim</a>
-                    </div>
-                  </div>
-                    </div>
-                    <div className="col-md-6">
-                    <div>
-                      <h6>Available in Vault:</h6>
-                      <p id="yournfts">--</p>
-                      <a href="#/" onClick={unstakeall} class="btn action-btn btn-primary">Unstake All</a>
-                    </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-8">
-              <div className="card" style={{marginTop: '40px'}}>
-                <div className="card-body">
-                  <div className="row">
-                    <div className="col-md-4">
-                      <h6>Total Goblins Staked
-                        <p id="totalsupply">--</p>
-                      </h6>
-                    </div>
-                    <div className="col-md-4">
-                      <h6>Daily rewards
-                        <p>0.991 GobNFT</p>
-                      </h6>
-                    </div>
-                    <div className="col-md-4">
-                      <h6>Max Supply
-                        <p>9,999 Goblins</p>
-                      </h6>
-                    </div>
-                  </div>
-                </div>
-              </div> <br/><br/>
-              <div className="card">
-              <div className="card-body">
-                  <div className="row">
-                    <div className="col-md-4">
-                      <h6>GobNFT Max Supply
-                        <p>10,000,000,000</p>
-                      </h6>
-                    </div>
-                    <div className="col-md-4">
-                      <h6>GobNFT Price
-                        <p>--</p>
-                      </h6>
-                    </div>
-                    <div className="col-md-4">
-                      <h6>Liquidity
-                        <p>$--</p>
-                      </h6>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-
-              <NFT />
-
-
-
-
-
-
-
-        {/**<div className="container container-style">
+        <div className="container container-style">
           <div className="col">
             <form className="nftminter">
               <div className="row pt-3">
@@ -398,7 +268,7 @@ class App extends Component {
               </p>
               <p>If you don't own the NFT, the transaction will fail.</p>
               <div className="stkunstk-btn-input">
-                <Button onClick={stakeInput} style={{ margin: "10px 5px", width: '25%', backgroundColor: "#ffffff10", boxShadow: "1px 1px 5px #000000" }} value="stake">
+                <Button onClick={stakeInput} style={{ margin: "10px 5px", width: '25%', backgroundColor: "#ffffff10", boxShadow: "1px 1px 5px #000000"}} value="stake">
                   Stake
                 </Button>
                 <input id='stake-input' placeholder="Input your NFTs #ID" style={{ borderColor: 'black', color: 'white', width: '70%', backgroundColor: "#ffffff10", boxShadow: "1px 1px 5px #00000", padding: '3px' }} />
@@ -425,19 +295,8 @@ class App extends Component {
               >
                 WenLambo NFT Staking Vault{" "}
               </h2>
-              <div style={{ width: '60%', margin: 'auto' }}>
+              <div style={{width: '60%', margin: 'auto'}}>
                 <h6 style={{ fontWeight: "300", padding: '20px 0px' }}>If you don't authorize your wallet, transaction will fail or gas fee will be 0.99 BCH</h6>
-                <Button
-                  className="btn authorize"
-                  onClick={enable}
-                  style={{
-                    backgroundColor: "#ffffff10",
-                    boxShadow: "1px 1px 5px #000000",
-                    marginBottom: '20px'
-                  }}
-                >
-                  Authorize Your Wallet
-                </Button>
               </div>
               <div className="row px-3">
                 <div className="col">
@@ -619,8 +478,8 @@ class App extends Component {
           <div className="col mt-3 mr-5">
             <img src="smartbch.png" width={"60%"}></img>
           </div>
-        </div>**/}
         </div>
+      </div>
     );
   }
 }
